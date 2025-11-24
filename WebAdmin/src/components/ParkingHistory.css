@@ -1,0 +1,10 @@
+.history-scroll {
+  max-height: 350px;    /* chiều cao cố định */
+  overflow-y: auto;     /* cho phép cuộn */
+  overflow-x: hidden;
+  padding-right: 8px;   /* tránh che nội dung */
+}
+
+.history-scroll table {
+  width: 100%;
+}
