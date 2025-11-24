@@ -6,10 +6,10 @@ from smart_parking.parking_lot_status import parking_lot_status
 app = Flask(__name__)
 
 # ==================== MQTT CONFIG ====================
-MQTT_BROKER = "4e01ee67ec4e475ca4c3b68e2703f19e.s1.eu.hivemq.cloud"
-MQTT_PORT = 8883
-MQTT_USER = "Nhom3iot"
-MQTT_PASS = "Nhom3iot"
+MQTT_BROKER = ""
+MQTT_PORT = 
+MQTT_USER = ""
+MQTT_PASS = ""
 
 mqtt_client = mqtt.Client()
 mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
@@ -48,7 +48,6 @@ def gen_slot():
     last_publish_time = time.time()
     last_published_payload = None
 
-    # Thêm mới hôm 11/11
     slot_memory = {}  # lưu trạng thái và thời gian phát hiện cuối
 
     def stable_status(slot_name, current_status, stable_time=5.0):
@@ -65,8 +64,6 @@ def gen_slot():
             return current_status
         return prev["status"]
 
-    # Thêm mới hôm 11/11
-
     changed = False
     last_publish_time = time.time()
     last_published_payload = None
@@ -81,7 +78,7 @@ def gen_slot():
             slot_name = labels[i]
             slot_img = frame[coords[1]:coords[3], coords[0]:coords[2]]
             lot_status = parking_lot_status(slot_img)
-            lot_status = stable_status(slot_name, lot_status, stable_time=4.0)  # thêm ngày 11/11
+            lot_status = stable_status(slot_name, lot_status, stable_time=4.0)
             plate_number = None
 
             if lot_status == "available":
