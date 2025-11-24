@@ -1,5 +1,5 @@
 import json
-import ssl  # <- Thêm thư viện SSL cho
+import ssl
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
@@ -15,33 +15,17 @@ from kivy.core.window import Window
 from kivy.network.urlrequest import UrlRequest
 from kivy.graphics import Color, Rectangle, RoundedRectangle
 import paho.mqtt.client as mqtt
-# from kivy.animation import Animation
-# Animation(rgba=new_color, duration=0.2).start(color_instr)
 
-# --- CẤU HÌNH CỦA BẠN ---
-# Thông tin MQTT đã được điền từ ảnh của bạn
-
-# 1. Cấu hình MQTT
 MQTT_BROKER_HOST = "4e01ee67ec4e475ca4c3b68e2703f19e.s1.eu.hivemq.cloud"
-MQTT_BROKER_PORT = 8883  # QUAN TRỌNG: Đây là port 8883 (TLS/SSL)
+MQTT_BROKER_PORT = 8883  
 MQTT_TOPIC = "Information"
-MQTT_USERNAME = "Nhom3iot"  # <-- BẠN PHẢI ĐIỀN THÔNG TIN NÀY
-MQTT_PASSWORD = "Nhom3iot"  # <-- BẠN PHẢI ĐIỀN THÔNG TIN NÀY
+MQTT_USERNAME = "Nhom3iot" 
+MQTT_PASSWORD = "Nhom3iot" 
 
-# 2. Cấu hình API
-# Tôi đã điền API bạn cung cấp và GIẢ ĐỊNH tham số là "?bienso="
-# Nếu API của bạn dùng tham số khác (vd: ?plate=), BẠN PHẢI SỬA DÒNG NÀY
 API_HISTORY_URL_BASE = "https://z43k8t-8080.csb.app/parking-history/search?plate="
 
-# --- KẾT THÚC CẤU HÌNH ---
-
-
-# Set background color
 Window.clearcolor = (0.95, 0.95, 0.95, 1)
 
-
-# --- WIDGET 'CARD' TÙY CHỈNH (ĐÃ SỬA LỖI) ---
-# --- WIDGET 'CARD' TÙY CHỈNH (ĐÃ SỬA LỖI LẦN 2) ---
 class InfoCard(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -60,9 +44,6 @@ class InfoCard(BoxLayout):
 
         self.bind(pos=self.update_canvas, size=self.update_canvas)
 
-        # [SỬA LỖI] Thay vì gán "height" một lần lúc nó bằng 0,
-        # chúng ta "bind" nó để nó luôn tự cập nhật
-        # khi "minimum_height" thay đổi (khi widget con được thêm vào).
         self.bind(minimum_height=self.setter('height'))
 
     def update_canvas(self, *args):
@@ -105,7 +86,6 @@ class ParkingApp(App):
 
             # --- CẤU HÌNH TLS/SSL VÌ DÙNG PORT 8883 ---
             # Điều này là bắt buộc cho HiveMQ Cloud
-            # self.mqtt_client.tls_set(tls_version=ssl.PROTOCOL_TLS)
             self.mqtt_client.tls_set(
                 ca_certs="ca.crt",
                 certfile=None,
@@ -225,7 +205,7 @@ class ParkingApp(App):
             on_success=self.on_api_success,
             on_failure=self.on_api_failure,
             on_error=self.on_api_error,
-            timeout=10  # Thêm timeout 10 giây
+            timeout=10 
         )
 
     def on_api_success(self, request, result):
@@ -442,47 +422,7 @@ class ParkingApp(App):
             width=lambda instance, value: setattr(label, 'text_size', (value, None))
         )
         return label
-
-    # def create_history_item(self, item_data):
-    #     """Create a widget for a single history item."""
-    #     # Mỗi item là một InfoCard
-    #     item_card = InfoCard(size_hint_y=None)
-    #     item_card.padding = dp(12)  # Padding nhỏ hơn
-    #     item_card.spacing = dp(4)
-    #
-    #     # Xóa canvas vẽ đường kẻ (không cần nữa)
-    #     # with item_layout.canvas.before: ...
-    #     # item_layout.bind(pos=update_rect, size=update_rect)
-    #
-    #     item_card.add_widget(
-    #         Label(
-    #             text=f"Vào: {item_data.get('vao', 'N/A')}",
-    #             halign='left', font_size=dp(14), color=(0.3, 0.3, 0.3, 1),  # Màu xám
-    #             size_hint_y=None, height=dp(20)
-    #         )
-    #     )
-    #     item_card.add_widget(
-    #         Label(
-    #             text=f"Ra: {item_data.get('ra', 'N/A')}",
-    #             halign='left', font_size=dp(14), color=(0.3, 0.3, 0.3, 1),  # Màu xám
-    #             size_hint_y=None, height=dp(20)
-    #         )
-    #     )
-    #     item_card.add_widget(
-    #         Label(
-    #             text=f"Chi phí: {item_data.get('gia', 'N/A')}",
-    #             halign='left', font_size=dp(16), bold=True,
-    #             color=get_color_from_hex('#16a34a'),
-    #             size_hint_y=None, height=dp(25)
-    #         )
-    #     )
-    #
-    #     # Căn chỉnh text_size cho các Label
-    #     for widget in item_card.children:
-    #         if isinstance(widget, Label):
-    #             widget.bind(width=lambda instance, value: setattr(instance, 'text_size', (value, None)))
-    #
-    #     return item_card
+        
     def create_history_item(self, item_data):
         """Create a widget for a single history item."""
         item_card = InfoCard(size_hint_y=None)
