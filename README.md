@@ -6,12 +6,12 @@ App**.\
 Dự án bao gồm nhiều thành phần hoạt động song song nhằm cung cấp khả
 năng:
 
--   Nhận diện biển số xe tự động bằng YOLO + OCR\
--   Giám sát slot bãi xe theo thời gian thực\
--   Điều khiển barrier IN/OUT sử dụng ESP32\
--   Gửi và nhận dữ liệu qua MQTT\
--   Dashboard trực quan trên Web\
--   Ứng dụng Kivy Desktop để giám sát và tra cứu lịch sử\
+-   Nhận diện biển số xe tự động bằng YOLO + OCR
+-   Giám sát slot bãi xe theo thời gian thực
+-   Điều khiển barrier IN/OUT sử dụng ESP32
+-   Gửi và nhận dữ liệu qua MQTT
+-   Dashboard trực quan trên Web
+-   Ứng dụng Kivy Desktop để giám sát và tra cứu lịch sử
 -   Lưu trữ dữ liệu vào MySQL
 
 ## 1. Kiến trúc tổng thể hệ thống
@@ -33,33 +33,33 @@ ParkingHistory, EnvironmentData.
 
 ### 3.1. ESP32 Controller
 
--   Điều khiển Servo IN/OUT\
--   Đọc cảm biến DHT22\
--   Điều khiển LED theo trạng thái slot\
+-   Điều khiển Servo IN/OUT
+-   Đọc cảm biến DHT22
+-   Điều khiển LED theo trạng thái slot
 -   Gửi dữ liệu về WebServer qua MQTT
 
 ### 3.2. Camera Server
 
--   Dùng YOLO + OCR để nhận diện biển số\
+-   Dùng YOLO + OCR để nhận diện biển số
 -   Gửi dữ liệu camera/entry & camera/slot qua MQTT
 
 ### 3.3. Web Server (Node.js)
 
--   Kiểm tra biển số hợp lệ\
--   Tạo/Update ParkingHistory\
--   Lưu sensor vào EnvironmentData\
+-   Kiểm tra biển số hợp lệ
+-   Tạo/Update ParkingHistory
+-   Lưu sensor vào EnvironmentData
 -   Trả thông tin tổng quan cho Dashboard
 
 ### 3.4. Web Dashboard (ReactJS)
 
--   Hiển thị trạng thái slot\
--   Lịch sử vào/ra\
+-   Hiển thị trạng thái slot
+-   Lịch sử vào/ra
 -   Camera Dashboard
 
 ### 3.5. AppClient (Kivy)
 
--   Dashboard\
--   Map slot\
+-   Dashboard
+-   Map slot
 -   Tra cứu lịch sử theo biển số
 
 ## 4. Cách cài đặt
@@ -81,13 +81,13 @@ ParkingHistory, EnvironmentData.
 
 ## 6. MQTT Topics
 
-  Topic          Producer       Consumer           Mô tả\
-  -------------- -------------- ------------------ -----------------\
-  camera/entry   CameraServer   WebServer          Xe vào/ra\
-  camera/slot    CameraServer   WebServer/ESP32    Xe slot\
-  plate/valid    WebServer      ESP32              Biển số hợp lệ\
-  plate/slot     WebServer      ESP32              Map slot\
-  sensor/dht22   ESP32          WebServer          Nhiệt độ/độ ẩm\
+  Topic          Producer       Consumer           Mô tả
+  -------------- -------------- ------------------ -----------------
+  camera/entry   CameraServer   WebServer          Xe vào/ra
+  camera/slot    CameraServer   WebServer/ESP32    Xe slot
+  plate/valid    WebServer      ESP32              Biển số hợp lệ
+  plate/slot     WebServer      ESP32              Map slot
+  sensor/dht22   ESP32          WebServer          Nhiệt độ/độ ẩm
   Information    WebServer      WebApp/AppClient   Dashboard
 
 ## 7. Chạy WebServer
