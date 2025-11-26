@@ -81,14 +81,7 @@ ParkingHistory, EnvironmentData.
 
 ## 6. MQTT Topics
 
-  Topic          Producer       Consumer           Mô tả
-  -------------- -------------- ------------------ -----------------
-  camera/entry   CameraServer   WebServer          Xe vào/ra
-  camera/slot    CameraServer   WebServer/ESP32    Xe slot
-  plate/valid    WebServer      ESP32              Biển số hợp lệ
-  plate/slot     WebServer      ESP32              Map slot
-  sensor/dht22   ESP32          WebServer          Nhiệt độ/độ ẩm
-  Information    WebServer      WebApp/AppClient   Dashboard
+<img width="437" height="136" alt="image" src="https://github.com/user-attachments/assets/df876a52-0a8f-4ed4-8522-fbbf57c86340" />
 
 ## 7. Chạy WebServer
 
@@ -120,3 +113,5 @@ ParkingHistory, EnvironmentData.
 **Hoàng Văn Hướng**\
 **Nguyễn Thị Quỳnh Trang**
 
+## 12. Liên hệ
+Email: hieund12104@gmail.com
