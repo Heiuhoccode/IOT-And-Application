@@ -26,7 +26,8 @@ Broker**.
 Database bao gồm 6 bảng chính: ParkingLot, Slot, Camera, Vehicle,
 ParkingHistory, EnvironmentData.
 
-(Thêm hình vào repo sau)
+![Entity Relationship Diagram1](https://github.com/user-attachments/assets/ea886e81-ee7b-47ef-aaff-284142bf6861)
+
 
 ## 3. Các thành phần hệ thống
 
@@ -76,7 +77,6 @@ ParkingHistory, EnvironmentData.
     │── WebAdmin/
     │── WebServer/
     │── Hardware/
-    │── Database/
     │── README.md
 
 ## 6. MQTT Topics
@@ -84,7 +84,7 @@ ParkingHistory, EnvironmentData.
   Topic          Producer       Consumer           Mô tả
   -------------- -------------- ------------------ -----------------
   camera/entry   CameraServer   WebServer          Xe vào/ra
-  camera/slot    CameraServer   WebServer/ESP32    Trạng thái slot
+  camera/slot    CameraServer   WebServer/ESP32    Xe slot
   plate/valid    WebServer      ESP32              Biển số hợp lệ
   plate/slot     WebServer      ESP32              Map slot
   sensor/dht22   ESP32          WebServer          Nhiệt độ/độ ẩm
@@ -99,7 +99,7 @@ ParkingHistory, EnvironmentData.
 ## 8. Chạy Camera Server
 
     cd CameraServer
-    python camera.py
+    python main.py
 
 ## 9. Chạy AppClient
 
@@ -113,4 +113,10 @@ ParkingHistory, EnvironmentData.
 
 ## 11. Người thực hiện
 
-**Hoàng Hướng**
+**Nguyễn Đăng Hiếu (nhóm trưởng)**
+**Nguyễn Đăng Dương**
+**Nguyễn Khắc Dũng**
+**Đinh Việt Hiếu**
+**Hoàng Văn Hướng**
+**Nguyễn Thị Quỳnh Trang**
+
