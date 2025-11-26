@@ -8,7 +8,6 @@
 #include <sstream>
 #include <ArduinoJson.h>
 
-//Cấu hình phần cứng
 #define DHTPIN 4
 #define DHTTYPE DHT22
 #define SERVO_IN_PIN 14
@@ -24,41 +23,34 @@ Servo servoIN;
 Servo servoOUT;
 DHT dht(DHTPIN, DHTTYPE);
 
-//Cấu hình WiFi
-const char* ssid = "testnetwork";
-const char* password = "11223344";
+const char* ssid = "YOUR_SSID";
+const char* password = "YOUR_PASSWORD";
 
-//Cấu hình MQTT
-const char* mqtt_server = "4e01ee67ec4e475ca4c3b68e2703f19e.s1.eu.hivemq.cloud";
-const int mqtt_port = 8883;
-const char* mqtt_user = "Nhom3iot";
-const char* mqtt_pass = "Nhom3iot";
+const char* mqtt_server = "YOUR_HOST";
+const int mqtt_port = "YOUR_PORT";
+const char* mqtt_user = "YOUR_USERNAME";
+const char* mqtt_pass = "YOUR_PASSWORD";
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
-// ====== Thời gian gửi dữ liệu DHT ======
 unsigned long lastDHTTime = 0;
 const long DHTInterval = 3000;
 
-// Biến trạng thái IR và servo
 unsigned long lastDetectedIN = 0;
 unsigned long lastDetectedOUT = 0;
 bool isServoINOpen = false;
 bool isServoOUTOpen = false;
 
-// ====== Cấu hình múi giờ Việt Nam (UTC+7) ======
+// ====== VietNam's Time Zone (UTC+7) ======
 const char* ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 7 * 3600;
 const int daylightOffset_sec = 0;
 
-// ====== Thêm vào phần khai báo biến toàn cục ======
-bool slotStatus[4] = {false, false, false, false}; // false = trống, true = đã đỗ
+bool slotStatus[4] = {false, false, false, false}; // false = available, true = occupied
 unsigned long lastLCDUpdate = 0;
-bool lcdBusy = false; // LCD đang hiển thị nội dung sự kiện
-
+bool lcdBusy = false;
 bool hasBeepedFull = false;
 
-// ====== Hàm kết nối WiFi ======
 void setup_wifi() {
   lcd.setCursor(0, 0);
   lcd.print("Connecting WiFi");
@@ -72,7 +64,7 @@ void setup_wifi() {
   delay(1000);
 }
 
-// ====== Callback khi có tin nhắn MQTT ======
+// ====== Callback MQTT ======
 void callback(char* topic, byte* message, unsigned int length) {
   String msg;
   for (unsigned int i = 0; i < length; i++) {
@@ -104,7 +96,7 @@ void callback(char* topic, byte* message, unsigned int length) {
         lcd.print(plate);
         lcd.setCursor(0, 1);
         lcd.print("Welcome");
-        // Mở cổng IN
+
         for (int pos = 0; pos <= 60; pos += 2) {
           servoIN.write(pos);
           delay(15);
@@ -127,7 +119,7 @@ void callback(char* topic, byte* message, unsigned int length) {
         lcd.print(plate);
         lcd.setCursor(0, 1);
         lcd.print("See You Again");
-        // Mở cổng OU
+
         for (int pos = 0; pos <= 60; pos += 2) {
           servoOUT.write(pos);
           delay(15);
@@ -168,7 +160,6 @@ void callback(char* topic, byte* message, unsigned int length) {
   
 }
 
-// ====== Kết nối MQTT ======
 void reconnect() {
   while (!client.connected()) {
     lcd.clear();
@@ -187,7 +178,6 @@ void reconnect() {
   }
 }
 
-// ====== Lấy timestamp thực tế ======
 String getFormattedTime() {
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
@@ -198,7 +188,6 @@ String getFormattedTime() {
   return String(buffer);
 }
 
-// ====== Setup ======
 void setup() {
   Serial.begin(115200);
   lcd.init();
@@ -222,17 +211,16 @@ void setup() {
 
   setup_wifi();
 
-  espClient.setInsecure(); // Không kiểm tra chứng chỉ TLS
+  espClient.setInsecure();
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
 
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  Serial.println("Đang đồng bộ NTP...");
+  Serial.println("Synchronizing NTP...");
   delay(2000);
-  Serial.println("✅ NTP đồng bộ xong!");
+  Serial.println("✅ Synchronized NTP!");
 }
 
-// ====== Loop ======
 void loop() {
   if (!client.connected()) {
     reconnect();
@@ -254,13 +242,12 @@ void loop() {
       Serial.println("[ESP32 -> SERVER]: " + payload);
     }
   }
-  //Tự động đóng cổng IN
+
   int irIN = digitalRead(IR_IN_PIN);
-  if (irIN == LOW) {  // Phát hiện vật cản
-    lastDetectedIN = millis(); // reset thời gian
+  if (irIN == LOW) {
+    lastDetectedIN = millis();
   }
 
-  // Nếu servo đang mở và không thấy vật trong >2.5s → đóng lại
   if (isServoINOpen && (millis() - lastDetectedIN > 2500)) {
     for (int pos = 60; pos >= 0; pos -= 2) {
       servoIN.write(pos);
@@ -272,13 +259,11 @@ void loop() {
     lcd.print("Closed");
   }
 
-  //Tự động đóng cổng OUT
   int irOUT = digitalRead(IR_OUT_PIN);
-  if (irOUT == LOW) {  // Phát hiện vật cản
-    lastDetectedOUT = millis(); // reset thời gian
+  if (irOUT == LOW) {
+    lastDetectedOUT = millis();
   }
 
-  // Nếu servo đang mở và không thấy vật trong >2.5s → đóng lại
   if (isServoOUTOpen && (millis() - lastDetectedOUT > 2500)) {
     for (int pos = 60; pos >= 0; pos -= 2) {
       servoOUT.write(pos);
@@ -290,9 +275,6 @@ void loop() {
     lcd.print("Closed");
   }
 
-
-  
-  //Hiển thị slot trên LCD
   int occupied = 0;
   for (int i = 0; i < 4; i++) {
     if (slotStatus[i]) occupied++;
@@ -306,7 +288,6 @@ void loop() {
     lcd.setCursor(0, 1);
     lcd.print("No Slot Left!");
 
-    // Chỉ kêu 1 lần duy nhất
     if (!hasBeepedFull) {
       tone(BUZZER_PIN, 2000);
       delay(2500);
@@ -318,11 +299,10 @@ void loop() {
     return;
   } 
   else {
-    // reset nếu không còn full
     hasBeepedFull = false;
   }
 
-  if (!lcdBusy && millis() - lastLCDUpdate > 5000) { // mỗi 5 giây hiển thị lại
+  if (!lcdBusy && millis() - lastLCDUpdate > 5000) {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Occupied: ");
@@ -330,7 +310,6 @@ void loop() {
     lcd.setCursor(0, 1);
     lcd.print("Available: ");
     lcd.print(4 - occupied);
-
     lastLCDUpdate = millis();
   }
 }
