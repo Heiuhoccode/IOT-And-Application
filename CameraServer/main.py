@@ -5,11 +5,10 @@ from OcrPlate import OcrPlate
 from smart_parking.parking_lot_status import parking_lot_status
 app = Flask(__name__)
 
-# ==================== MQTT CONFIG ====================
-MQTT_BROKER = "4e01ee67ec4e475ca4c3b68e2703f19e.s1.eu.hivemq.cloud"
-MQTT_PORT = 8883
-MQTT_USER = "Nhom3iot"
-MQTT_PASS = "Nhom3iot"
+MQTT_BROKER = "YOUR_HOST"
+MQTT_PORT = "YOUR_PORT"
+MQTT_USER = "YOUR_USERNAME"
+MQTT_PASS = "YOUR_PASSWORD"
 
 mqtt_client = mqtt.Client()
 mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
@@ -17,20 +16,15 @@ mqtt_client.tls_set()
 mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
 mqtt_client.loop_start()
 
-# ==================== CAMERA CONFIG ====================
-# Slot camera
 ocr_slot = OcrPlate("model/best_plate.pt", "model/best_ocr.pt")
 cap_slot = cv2.VideoCapture(0)
 
-# Entry IN camera
 ocr_in = OcrPlate("model/best_plate.pt", "model/best_ocr.pt")
 cap_in = cv2.VideoCapture(2, cv2.CAP_DSHOW)
 
-# Entry OUT camera
 ocr_out = OcrPlate("model/best_plate.pt", "model/best_ocr.pt")
 cap_out = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 
-# ==================== GEN FUNCTION CHO TỪNG CAMERA ====================
 
 with open("smart_parking/parking_labels.txt") as f:
     labels = f.read().splitlines()
@@ -39,27 +33,22 @@ with open("smart_parking/parking_area_coordinates.txt") as f:
     coords_lines = f.read().splitlines()
 parking_lot_coords = [list(map(int, line.split())) for line in coords_lines]
 
-
-
 def gen_slot():
-    # Lưu trạng thái
-    last_status = {}  # trạng thái hiện tại
-    last_sent = {}  # lần cuối publish (để tránh spam)
+    last_status = {}
+    last_sent = {}
     last_publish_time = time.time()
     last_published_payload = None
 
-    slot_memory = {}  # lưu trạng thái và thời gian phát hiện cuối
+    slot_memory = {}
 
     def stable_status(slot_name, current_status, stable_time=5.0):
         now = time.time()
         prev = slot_memory.get(slot_name, {"status": None, "time": now})
 
         if current_status != prev["status"]:
-            # Nếu mới thay đổi -> reset thời gian
             slot_memory[slot_name] = {"status": current_status, "time": now}
-            return prev["status"]  # vẫn giữ trạng thái cũ cho đến khi ổn định
+            return prev["status"]
 
-        # Nếu cùng trạng thái quá stable_time giây -> chấp nhận
         if now - prev["time"] >= stable_time:
             return current_status
         return prev["status"]
@@ -94,7 +83,6 @@ def gen_slot():
                 text = f"{slot_name}: {plate_number}"
                 status[slot_name] = {"status": "occupied", "plate": plate_number}
 
-                # Nếu OCR lỗi ("???") thì lấy lại biển số cũ trong last_status nếu có
                 if plate_number == "???" and slot_name in last_status:
                     prev_plate = last_status[slot_name].get("plate")
                     if prev_plate:
@@ -113,25 +101,20 @@ def gen_slot():
 
         last_status = status
 
-        # ===== Publish MQTT mỗi 2.5 giây nếu có thay đổi và payload khác =====
         current_time = time.time()
         if current_time - last_publish_time >= 2.5:
             payload = last_sent
 
-            # So sánh payload với lần publish trước
             if not last_published_payload or last_published_payload != payload:
                 mqtt_client.publish("camera/slots", json.dumps(payload))
                 print("[Camera Slot-> Server]:", json.dumps(payload, indent=2))
                 last_published_payload = payload.copy()
 
-            else:
-                # Không gửi vì dữ liệu giống hệt
-                pass
+            else: pass
 
             last_publish_time = current_time
             changed = False
 
-        # Cuối cùng encode frame:
         ret2, buffer = cv2.imencode('.jpg', frame)
         if not ret2:
             continue
@@ -204,8 +187,6 @@ def gen_entry_out():
 
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-
-# ==================== ROUTE STREAM ====================
 
 @app.route("/video_slot")
 def video_slot():
