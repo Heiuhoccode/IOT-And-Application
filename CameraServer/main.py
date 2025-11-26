@@ -6,10 +6,10 @@ from smart_parking.parking_lot_status import parking_lot_status
 app = Flask(__name__)
 
 # ==================== MQTT CONFIG ====================
-MQTT_BROKER = ""
-MQTT_PORT = 
-MQTT_USER = ""
-MQTT_PASS = ""
+MQTT_BROKER = "4e01ee67ec4e475ca4c3b68e2703f19e.s1.eu.hivemq.cloud"
+MQTT_PORT = 8883
+MQTT_USER = "Nhom3iot"
+MQTT_PASS = "Nhom3iot"
 
 mqtt_client = mqtt.Client()
 mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)

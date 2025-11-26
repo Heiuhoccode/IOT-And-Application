@@ -27,7 +27,7 @@ MQTT_TOPIC = "Information"
 MQTT_USERNAME = "Nhom3iot"
 MQTT_PASSWORD = "Nhom3iot"
 
-API_HISTORY_URL_BASE = "https://z43k8t-8080.csb.app/parking-history/search?plate="
+API_HISTORY_URL_BASE = "http://10.180.225.37:8080/parking-history/search?plate="
 # --- KẾT THÚC CẤU HÌNH ---
 
 Window.clearcolor = (0.95, 0.95, 0.95, 1)
