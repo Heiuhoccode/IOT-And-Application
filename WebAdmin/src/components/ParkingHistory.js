@@ -15,7 +15,7 @@ const ParkingHistory = ({ data }) => {
   useEffect(()=>{
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:8080/parking-history/search?plate=");
+        const response = await fetch("API_SEARCH_HISTORY_BY_PLATE");
         const result = await response.json();
         setHistory(result);
       }
@@ -29,7 +29,7 @@ const ParkingHistory = ({ data }) => {
   
   const handleSearch = async () => {
     try{
-      const response = await fetch("http://localhost:8080/parking-history/search?plate="+search);
+      const response = await fetch("API_SEARCH_HISTORY_BY_PLATE"+search);
       const result = await response.json();
       setHistory(result);
     }
@@ -65,7 +65,6 @@ const ParkingHistory = ({ data }) => {
     <div className="panel">
       <h2>📋 Parking History</h2>
 
-      {/* Khung cuộn */}
       <div className="search-box">
           <input type="text" onChange={(e) => setSearch(e.target.value)} />
           <button onClick={handleSearch}>Search</button>

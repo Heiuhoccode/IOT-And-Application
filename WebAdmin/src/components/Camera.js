@@ -1,7 +1,7 @@
 import "./Camera.css";
 
 export default function CameraView() {
-  const base = "http://10.180.225.210:5000";
+  const base = "CameraServer API: http://your_api";
 
   return (
     <div className="container">

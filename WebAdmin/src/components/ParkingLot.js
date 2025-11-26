@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 
 const ParkingLot = ({ slots }) => {
-  const [plates, setPlates] = useState({}); // lưu biển số từng slot
+  const [plates, setPlates] = useState({});
 
   const fetchPlate = async (slot) => {
     try {
       const response = await fetch(
-        "http://localhost:8080/parking-history/search?slot=" + slot[1]
+        "API_SEARCH_HISTORY_BY_SLOT" + slot[1]
       );
       const data = await response.json();
 
@@ -19,7 +19,6 @@ const ParkingLot = ({ slots }) => {
     }
   };
 
-  // Khi slots thay đổi → tải plate cho mỗi slot occupied
   useEffect(() => {
     Object.entries(slots).forEach(([slot, status]) => {
       if (status === "occupied") {

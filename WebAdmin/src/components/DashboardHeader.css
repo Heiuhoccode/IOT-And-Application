@@ -4,30 +4,30 @@
     box-shadow:0 4px 12px rgba(0,0,0,.08);
   }
   
-  /* Trái */
+
   .header-left{flex:1}
   .parking-title{font-size:2.2rem;margin:0;color:#2c3e50;line-height:1.1}
   .parking-location{margin:6px 0 0;color:#7f8c8d;font-size:1.05rem}
   
-  /* Phải: GRID cố định để không xô lệch */
+
   .header-right{
-    flex:1.6; /* rộng hơn chút để đủ chỗ */
+    flex:1.6;
   }
   .header-right.grid{
     display:grid;
-    grid-template-columns: repeat(3, minmax(160px, 1fr)); /* 3 cột đều nhau */
-    grid-auto-rows: 32px;          /* chiều cao các hàng đồng đều */
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+    grid-auto-rows: 32px;
     column-gap: 24px; row-gap: 8px;
-    justify-items: end;            /* căn phải nội dung mỗi ô */
+    justify-items: end;
     align-items: center;
   }
   .info-item{white-space:nowrap; color:#34495e; font-size:1rem}
   
-  /* Responsive: khi màn hẹp (< 900px) tự xuống 2 cột */
+
   @media (max-width: 900px){
     .header-right.grid{grid-template-columns: repeat(2, minmax(160px,1fr))}
   }
-  /* Rất hẹp (< 600px) xếp 1 cột */
+
   @media (max-width: 600px){
     .header-container{flex-direction:column; align-items:flex-start}
     .header-right.grid{

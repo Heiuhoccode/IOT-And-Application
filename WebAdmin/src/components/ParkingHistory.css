@@ -1,8 +1,8 @@
 .history-scroll {
-  max-height: 350px;    /* chiều cao cố định */
-  overflow-y: auto;     /* cho phép cuộn */
+  max-height: 350px;
+  overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 8px;   /* tránh che nội dung */
+  padding-right: 8px;
 }
 
 .history-scroll table {
@@ -45,8 +45,6 @@
   background-color: #217dbb;
 }
 
-
-/* Nút trong tiêu đề bảng */
 /* ===== FILTER BUTTON IN TABLE HEADER ===== */
 .th-btn {
   width: 100%;

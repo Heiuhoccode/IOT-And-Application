@@ -6,22 +6,22 @@ import "./components/Dashboard.css";
 import Camera from "./components/Camera";
 import mqtt from "mqtt";
 function App() {
-  const [data,setData] = useState({tenBai: '', diaChi: '', tongSlot: 0, nhietDo: 0, doAm: 0,status: 
+  const [data,setData] = useState({parkingLot: '', address: '', slot: 0, temperature: 0, humidity: 0,status:
   {s1: 'available', s2: 'available', s3: 'available', s4: 'available'}});
   const [entry,setEntry] = useState("");
   useEffect(() => {
     try{
-      const broker = "wss://4e01ee67ec4e475ca4c3b68e2703f19e.s1.eu.hivemq.cloud:8884/mqtt";
+      const broker = "YOUR_MQTT_HOST";
       const options = {
-        username: "Nhom3iot",
-        password: "Nhom3iot",
+        username: "YOUR_USERNAME",
+        password: "YOUR_PASSWORD",
         reconnectPeriod: 2000,
       };
 
       const mqttClient = mqtt.connect(broker, options);
 
       mqttClient.on("connect", () => {
-        console.log("✅ Đã kết nối tới MQTT Broker!");
+        console.log("✅ Connected MQTT Broker!");
         mqttClient.subscribe(["Information","camera/entry"]);
       });
 
@@ -36,13 +36,12 @@ function App() {
               setEntry(result);
             }
           } catch (err) {
-            console.error("Lỗi parse JSON:", err);
+            console.error("Error parse JSON:", err);
           }
         
       });
 
       mqttClient.on("error", (err) => console.error("❌ MQTT Error:", err));
-      // mqttClient.on("close");
 
       return () => mqttClient.end();
     }
