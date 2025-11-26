@@ -1,18 +1,18 @@
 const mysql = require("mysql2");
 const db = mysql.createConnection({
-    host: "binzkjb5rditypwr6b8r-mysql.services.clever-cloud.com",
-    user: "uziwfoaieje3u6sj",
-    password: "hQN6EvKO4kAwg4s3sScS",
-    database: "binzkjb5rditypwr6b8r",
-    port: 3306,
+    host: "YOUR_mysql.services.clever-cloud.com",
+    user: "YOUR_USERNAME",
+    password: "YOUR_PASSWORD",
+    database: "YOUR_DATABASE",
+    port: "YOUR_PORT",
 });
   
-  // Kiểm tra kết nối
+// Testing connect
 db.connect((err) => {
     if (err) {
-      console.error("❌ Lỗi kết nối MySQL:", err);
+      console.error("❌ Error connect MySQL:", err);
     } else {
-      console.log("✅ Kết nối MySQL Clever Cloud thành công!");
+      console.log("✅ Connected MySQL Clever Cloud successful!");
     }
 });
 module.exports = db;

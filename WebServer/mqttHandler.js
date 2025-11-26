@@ -1,17 +1,15 @@
 const mqtt = require("mqtt");
 const db = require("./db");
-// ===== Thông tin broker (ví dụ HiveMQ Cloud) =====
+
 const broker =
-  "mqtts://4e01ee67ec4e475ca4c3b68e2703f19e.s1.eu.hivemq.cloud:8883";
+  "YOUR_MQTT_HOST:YOUR_PORT";
 const options = {
-  username: "Nhom3iot",
-  password: "Nhom3iot",
+  username: "YOUR_USERNAME",
+  password: "YOUR_PASSWORD",
 };
 
-// ===== Kết nối broker =====
 const client = mqtt.connect(broker, options);
 
-// ===== Khi kết nối thành công =====
 client.on("connect", () => {
   console.log("✅ Connected to MQTT broker");
   client.subscribe(["camera/slots", "camera/entry", "sensor/dht22"], (err) => {
@@ -25,34 +23,32 @@ const slotStatus = {
   s3: "available",
   s4: "available",
 };
-// ===== Lắng nghe dữ liệu nhận được =====
+
 client.on("message", (topic, message) => {
   console.log(`📥 Message from ${topic}: ${message.toString()}`);
 
   try {
     const data = JSON.parse(message);
     if (topic === "camera/entry") {
-      const date = new Date(data.ts);           // 2025-11-25T15:26:11 (VN)
+      const date = new Date(data.ts);
       const utc = new Date(date.getTime() + 14*60*60*1000);
       const mysqlTime = utc.toISOString().slice(0, 19).replace("T", " ");
       const plate = data.plate.replaceAll(" ", "");
 
-      // Tạo payload ban đầu
       const pub = { plate, status: "", valid: true };
 
-      // 🔍 Kiểm tra biển số trong DB
       db.query(
         "SELECT * FROM Vehicle WHERE license_plate = ?",
         [plate],
         (err, result) => {
           if (err) {
             console.error("❌ DB error:", err);
-            pub.valid = false; // lỗi DB → coi như không hợp lệ
+            pub.valid = false;
           } else if (result.length === 0) {
-            console.log("🚫 Không tìm thấy biển số:", plate);
+            console.log("🚫 Not Exist Plate:", plate);
             pub.valid = false;
           } else {
-            console.log("✅ Biển số hợp lệ:", plate);
+            console.log("✅ Exist Plate:", plate);
             db.query(
               "SELECT * FROM ParkingHistory WHERE vehicle_id = ?",
               [result[0].vehicle_id],
@@ -98,8 +94,6 @@ client.on("message", (topic, message) => {
               }
             );
           }
-
-          // ✅ Publish sau khi query hoàn tất
         }
       );
     }
@@ -112,7 +106,7 @@ client.on("message", (topic, message) => {
 
           const now = Date.now() / 1000;
           slotStatus[slotName] = status;
-          // Nếu OCR lỗi hoặc ??? -> dùng dữ liệu cũ trong 10 giây gần nhất
+
           if (!plate || plate === "???") {
             const prev = slotsMemory[slotName];
             if (prev && now - prev.time < 10) {
@@ -123,10 +117,8 @@ client.on("message", (topic, message) => {
             }
           }
 
-          // Cập nhật bộ nhớ slot
           slotsMemory[slotName] = { plate, status, time: now };
 
-          // Nếu biển số hợp lệ và xe đang đỗ -> gửi lại cho ESP32
           if (plate && status === "occupied") {
             plate = plate.replaceAll(" ", "");
             const slotIndex = parseInt(slotName.replace("s", ""));
@@ -160,7 +152,6 @@ client.on("message", (topic, message) => {
             );
           }
 
-          // Nếu slot trống -> thông báo cho ESP32
           if (status === "available") {
             const slotIndex = parseInt(slotName.replace("s", ""));
             const payload = JSON.stringify({
@@ -180,7 +171,7 @@ client.on("message", (topic, message) => {
     if (topic === "sensor/dht22") {
       const toMySQLDatetime = (isoString) => {
         const date = new Date(isoString);
-        const offset = 7 * 60 * 60 * 1000; // +7h múi giờ Việt Nam
+        const offset = 7 * 60 * 60 * 1000;
         const local = new Date(date.getTime() + offset);
         return local.toISOString().slice(0, 19).replace("T", " ");
       };
