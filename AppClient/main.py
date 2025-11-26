@@ -1,5 +1,6 @@
 import json
 import ssl
+import paho.mqtt.client as mqtt
 from datetime import datetime
 
 from kivy.app import App
@@ -17,25 +18,16 @@ from kivy.core.window import Window
 from kivy.network.urlrequest import UrlRequest
 from kivy.graphics import Color, RoundedRectangle
 
-import paho.mqtt.client as mqtt
+MQTT_BROKER_HOST = "YOUR_HOST"
+MQTT_BROKER_PORT = "YOUR_PORT"
+MQTT_TOPIC = "YOUR_TOPIC"
+MQTT_USERNAME = "YOUR_USERNAME"
+MQTT_PASSWORD = "YOUR_PASSWORD"
 
-
-# --- CẤU HÌNH CỦA BẠN ---
-MQTT_BROKER_HOST = "4e01ee67ec4e475ca4c3b68e2703f19e.s1.eu.hivemq.cloud"
-MQTT_BROKER_PORT = 8883
-MQTT_TOPIC = "Information"
-MQTT_USERNAME = "Nhom3iot"
-MQTT_PASSWORD = "Nhom3iot"
-
-API_HISTORY_URL_BASE = "http://10.180.225.37:8080/parking-history/search?plate="
-# --- KẾT THÚC CẤU HÌNH ---
+API_HISTORY_URL_BASE = "YOUR_API"
 
 Window.clearcolor = (0.95, 0.95, 0.95, 1)
 
-
-# =======================
-# Re-usable Card widget
-# =======================
 class InfoCard(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -60,15 +52,9 @@ class InfoCard(BoxLayout):
         self.rect.pos = self.pos
         self.rect.size = self.size
 
-
-# =======================
-# App
-# =======================
 class ParkingApp(App):
 
-    # --------- Utils ---------
     def format_time(self, iso_time):
-        """ISO -> dd/mm/yyyy - HH:MM"""
         try:
             dt = datetime.fromisoformat(str(iso_time).replace("Z", "+00:00"))
             return dt.strftime("%d/%m/%Y - %H:%M")
@@ -76,23 +62,21 @@ class ParkingApp(App):
             return str(iso_time)
 
     def wrap_label(self, lbl: Label):
-        """Make label wrap text inside its width."""
         lbl.bind(
             size=lambda inst, val:
                 setattr(inst, "text_size", (inst.width, None))
         )
         return lbl
 
-    # --------- Kivy lifecycle ---------
     def build(self):
         self.tab_panel = TabbedPanel(do_default_tab=False)
         self.tab_panel.background_color = (1, 1, 1, 1)
 
-        self.tab_dashboard = TabbedPanelItem(text="Tổng quan")
+        self.tab_dashboard = TabbedPanelItem(text="Dashboard")
         self.tab_dashboard.content = self.create_dashboard_tab()
         self.tab_panel.add_widget(self.tab_dashboard)
 
-        self.tab_history = TabbedPanelItem(text="Lịch sử")
+        self.tab_history = TabbedPanelItem(text="History")
         self.tab_history.content = self.create_history_tab()
         self.tab_panel.add_widget(self.tab_history)
 
@@ -106,7 +90,6 @@ class ParkingApp(App):
             self.mqtt_client.on_message = self.on_mqtt_message
             self.mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
 
-            # TLS for HiveMQ Cloud 8883
             self.mqtt_client.tls_set(
                 ca_certs="ca.crt",
                 certfile=None,
@@ -116,9 +99,9 @@ class ParkingApp(App):
 
             self.mqtt_client.connect_async(MQTT_BROKER_HOST, MQTT_BROKER_PORT, 60)
             self.mqtt_client.loop_start()
-            self.set_dashboard_status("Đang kết nối MQTT...", "blue")
+            self.set_dashboard_status("Connecting MQTT...", "blue")
         except Exception as e:
-            self.set_dashboard_status(f"Lỗi kết nối MQTT:\n{e}", "red")
+            self.set_dashboard_status(f"Error connected MQTT:\n{e}", "red")
 
     def on_stop(self):
         if hasattr(self, "mqtt_client"):
@@ -129,9 +112,9 @@ class ParkingApp(App):
     def on_mqtt_connect(self, client, userdata, flags, rc):
         if rc == 0:
             client.subscribe(MQTT_TOPIC)
-            Clock.schedule_once(lambda dt: self.set_dashboard_status("Đã kết nối. Chờ dữ liệu...", "green"))
+            Clock.schedule_once(lambda dt: self.set_dashboard_status("Connected! Loading...", "green"))
         else:
-            Clock.schedule_once(lambda dt: self.set_dashboard_status(f"Lỗi kết nối MQTT: {rc}", "red"))
+            Clock.schedule_once(lambda dt: self.set_dashboard_status(f"Error connected MQTT: {rc}", "red"))
 
     def on_mqtt_message(self, client, userdata, msg):
         try:
@@ -139,7 +122,7 @@ class ParkingApp(App):
             data = json.loads(payload)
             Clock.schedule_once(lambda dt: self.update_dashboard(data))
         except Exception as e:
-            Clock.schedule_once(lambda dt: self.set_dashboard_status(f"Lỗi xử lý message:\n{e}", "red"))
+            Clock.schedule_once(lambda dt: self.set_dashboard_status(f"Error processed message:\n{e}", "red"))
 
     # --------- Dashboard updates ---------
     def set_dashboard_status(self, text, status_type=""):
@@ -156,12 +139,12 @@ class ParkingApp(App):
 
     def update_dashboard(self, data):
         try:
-            self.label_ten_bai.text = data.get("tenBai", "N/A")
+            self.label_ten_bai.text = data.get("parkingLot", "N/A")
             self.label_ten_bai.color = (0, 0, 0, 1)
-            self.label_dia_chi.text = data.get("diaChi", "N/A")
-            self.label_tong_slot.text = str(data.get("tongSlot", "N/A"))
-            self.label_nhiet_do.text = f"{data.get('nhietDo', 'N/A')} °C"
-            self.label_do_am.text = f"{data.get('doAm', 'N/A')} %"
+            self.label_dia_chi.text = data.get("address", "N/A")
+            self.label_tong_slot.text = str(data.get("slot", "N/A"))
+            self.label_nhiet_do.text = f"{data.get('temperature', 'N/A')} °C"
+            self.label_do_am.text = f"{data.get('humidity', 'N/A')} %"
 
             status = (data.get("status", {}) or {})
             available_count = sum(1 for v in status.values() if v == "available")
@@ -180,17 +163,17 @@ class ParkingApp(App):
                     text_label.color = (0, 0, 0, 1)
 
         except Exception:
-            self.label_ten_bai.text = "Lỗi cập nhật UI"
+            self.label_ten_bai.text = "Error UI!"
 
     # --------- API ---------
     def handle_tra_cuu(self, instance):
         bien_so = self.input_bien_so.text.strip().upper()
         if not bien_so:
-            self.show_history_message("Vui lòng nhập biển số xe.", "red")
+            self.show_history_message("Enter your license plate.", "red")
             return
 
         full_api_url = f"{API_HISTORY_URL_BASE}{bien_so}"
-        self.show_history_message("Đang tải...", "blue")
+        self.show_history_message("Loading...", "blue")
 
         UrlRequest(
             full_api_url,
@@ -203,19 +186,19 @@ class ParkingApp(App):
     def on_api_success(self, request, result):
         self.history_layout.clear_widgets()
         if not result:
-            self.show_history_message("Không tìm thấy lịch sử cho biển số này.", "blue")
+            self.show_history_message("Nothing !!!", "blue")
             return
         try:
             for item in result:
                 self.history_layout.add_widget(self.create_history_item(item))
         except Exception:
-            self.show_history_message("Lỗi xử lý dữ liệu API.", "red")
+            self.show_history_message("Error processed data!", "red")
 
     def on_api_failure(self, request, error_result):
-        self.show_history_message("Lỗi máy chủ API.", "red")
+        self.show_history_message("Error API server!", "red")
 
     def on_api_error(self, request, error):
-        self.show_history_message("Lỗi mạng: Không thể kết nối API.", "red")
+        self.show_history_message("Error Network!", "red")
 
     def show_history_message(self, text, msg_type=""):
         self.history_layout.clear_widgets()
@@ -230,9 +213,6 @@ class ParkingApp(App):
         self.wrap_label(lbl)
         self.history_layout.add_widget(lbl)
 
-    # =======================
-    # UI construction
-    # =======================
     def create_dashboard_tab(self):
         root_scroll = ScrollView(size_hint=(1, 1))
 
@@ -244,9 +224,9 @@ class ParkingApp(App):
         )
         main_layout.bind(minimum_height=main_layout.setter("height"))
 
-        # --- Card 1: Thông tin chung ---
+        # --- Card 1: General ---
         card_info = InfoCard()
-        title = Label(text="Thông tin chung", font_size=sp(18), bold=True, color=(0, 0, 0, 1),
+        title = Label(text="General", font_size=sp(18), bold=True, color=(0, 0, 0, 1),
                       size_hint_y=None, height=dp(36))
         self.wrap_label(title)
         card_info.add_widget(title)
@@ -257,17 +237,17 @@ class ParkingApp(App):
         self.label_ten_bai = self.create_value_label(is_highlight=True)
         self.label_dia_chi = self.create_value_label()
 
-        info_grid.add_widget(self.create_key_label("Tên bãi:"))
+        info_grid.add_widget(self.create_key_label("Parking Lot:"))
         info_grid.add_widget(self.label_ten_bai)
-        info_grid.add_widget(self.create_key_label("Địa chỉ:"))
+        info_grid.add_widget(self.create_key_label("Address:"))
         info_grid.add_widget(self.label_dia_chi)
 
         card_info.add_widget(info_grid)
         main_layout.add_widget(card_info)
 
-        # --- Card 2: Trạng thái ---
+        # --- Card 2: Status ---
         card_status = InfoCard()
-        title2 = Label(text="Trạng thái", font_size=sp(18), bold=True, color=(0, 0, 0, 1),
+        title2 = Label(text="Status", font_size=sp(18), bold=True, color=(0, 0, 0, 1),
                        size_hint_y=None, height=dp(36))
         self.wrap_label(title2)
         card_status.add_widget(title2)
@@ -280,21 +260,21 @@ class ParkingApp(App):
         self.label_nhiet_do = self.create_value_label()
         self.label_do_am = self.create_value_label()
 
-        status_grid.add_widget(self.create_key_label("Tổng slot:"))
+        status_grid.add_widget(self.create_key_label("Slot:"))
         status_grid.add_widget(self.label_tong_slot)
-        status_grid.add_widget(self.create_key_label("Slot trống:"))
+        status_grid.add_widget(self.create_key_label("Available Slot:"))
         status_grid.add_widget(self.label_slot_trong)
-        status_grid.add_widget(self.create_key_label("Nhiệt độ:"))
+        status_grid.add_widget(self.create_key_label("Temperature:"))
         status_grid.add_widget(self.label_nhiet_do)
-        status_grid.add_widget(self.create_key_label("Độ ẩm:"))
+        status_grid.add_widget(self.create_key_label("Humidity:"))
         status_grid.add_widget(self.label_do_am)
 
         card_status.add_widget(status_grid)
         main_layout.add_widget(card_status)
 
-        # --- Card 3: Sơ đồ chỗ đỗ ---
+        # --- Card 3: Map ---
         card_slots = InfoCard()
-        title3 = Label(text="Sơ đồ chỗ đỗ", font_size=sp(18), bold=True, color=(0, 0, 0, 1),
+        title3 = Label(text="Map", font_size=sp(18), bold=True, color=(0, 0, 0, 1),
                        size_hint_y=None, height=dp(28))
         self.wrap_label(title3)
         card_slots.add_widget(title3)
@@ -337,7 +317,7 @@ class ParkingApp(App):
         top_bar = BoxLayout(orientation="horizontal", size_hint_y=None, height=dp(46), spacing=dp(8))
 
         self.input_bien_so = TextInput(
-            hint_text="Nhập biển số xe",
+            hint_text="Enter license plate",
             multiline=False,
             size_hint_x=0.65,
             font_size=sp(15),
@@ -345,7 +325,7 @@ class ParkingApp(App):
         )
 
         search_button = Button(
-            text="Tra cứu",
+            text="Search",
             size_hint_x=0.35,
             font_size=sp(15),
             background_normal="",
@@ -394,7 +374,7 @@ class ParkingApp(App):
         font_size = sp(18) if is_highlight else sp(15)
 
         lbl = Label(
-            text="Đang chờ dữ liệu...",
+            text="Loading...",
             font_size=font_size,
             bold=is_highlight,
             color=color,
@@ -412,16 +392,16 @@ class ParkingApp(App):
         item_card.spacing = dp(4)
 
         raw_in = item_data.get("time_in", "N/A")
-        raw_out = item_data.get("time_out", "Đang gửi")
+        raw_out = item_data.get("time_out", "Sending!")
 
         time_in = self.format_time(raw_in) if raw_in != "N/A" else "N/A"
-        time_out = self.format_time(raw_out) if raw_out != "Đang gửi" else "Đang gửi"
+        time_out = self.format_time(raw_out) if raw_out != "Sending" else "Sending"
 
         slot_number = item_data.get("slot_number", "N/A")
         lot_id = item_data.get("lot_id", "N/A")
 
         title = Label(
-            text=f"Biển số: {item_data.get('license_plate', 'N/A')}",
+            text=f"License plate: {item_data.get('license_plate', 'N/A')}",
             font_size=sp(16),
             bold=True,
             color=(0, 0, 0, 1),
@@ -433,7 +413,7 @@ class ParkingApp(App):
         item_card.add_widget(title)
 
         sub = Label(
-            text=f"Bãi: {lot_id} - Slot: {slot_number}",
+            text=f"CodePL: {lot_id} - CodeS: {slot_number}",
             font_size=sp(14),
             color=(0.35, 0.35, 0.35, 1),
             halign="left",
@@ -444,7 +424,7 @@ class ParkingApp(App):
         item_card.add_widget(sub)
 
         lin = Label(
-            text=f"Vào: {time_in}",
+            text=f"Time in: {time_in}",
             font_size=sp(14),
             color=(0.35, 0.35, 0.35, 1),
             halign="left",
@@ -455,7 +435,7 @@ class ParkingApp(App):
         item_card.add_widget(lin)
 
         lout = Label(
-            text=f"Ra: {time_out}",
+            text=f"Time out: {time_out}",
             font_size=sp(14),
             color=(0.35, 0.35, 0.35, 1),
             halign="left",
