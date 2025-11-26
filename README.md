@@ -113,10 +113,10 @@ ParkingHistory, EnvironmentData.
 
 ## 11. Người thực hiện
 
-**Nguyễn Đăng Hiếu (nhóm trưởng)**
-**Nguyễn Đăng Dương**
-**Nguyễn Khắc Dũng**
-**Đinh Việt Hiếu**
-**Hoàng Văn Hướng**
+**Nguyễn Đăng Hiếu (nhóm trưởng)**\
+**Nguyễn Đăng Dương**\
+**Nguyễn Khắc Dũng**\
+**Đinh Việt Hiếu**\
+**Hoàng Văn Hướng**\
 **Nguyễn Thị Quỳnh Trang**
 
