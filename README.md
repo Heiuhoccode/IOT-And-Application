@@ -117,5 +117,5 @@ ParkingHistory, EnvironmentData.
 Email: hieund12104@gmail.com
 
 ## 13. Score
-Total Score: 58\n
+Total Score: 58\
 Average: 9.667 per person
