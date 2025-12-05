@@ -115,3 +115,7 @@ ParkingHistory, EnvironmentData.
 
 ## 12. Liên hệ
 Email: hieund12104@gmail.com
+
+## 13. Score
+Total Score: 58
+Average: 9.667 per person
